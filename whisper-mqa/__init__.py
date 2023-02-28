@@ -1,2 +1,0 @@
-from .configuration_whisper_mqa import WhisperCustomConfig
-from .modeling_whisper_mqa import WhisperForConditionalGenerationCustom
