@@ -36,7 +36,7 @@ from transformers.modeling_utils import PreTrainedModel
 from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from transformers.models.whisper.configuration_whisper import WhisperConfig
 
-from whisper_mqa import WhisperMQAttention
+from .multiquery_attention import WhisperMQAttention
 
 
 logger = logging.get_logger(__name__)
@@ -98,6 +98,7 @@ def _expand_mask(mask: torch.Tensor, dtype: torch.dtype, tgt_len: Optional[int] 
 
     return inverted_mask.masked_fill(inverted_mask.to(torch.bool), torch.finfo(dtype).min)
 
+# Copied from transformers.models.whisper.modeling_whisper.WhisperPositionalEmbedding
 class WhisperPositionalEmbedding(nn.Embedding):
     def __init__(self, num_positions: int, embedding_dim: int, padding_idx: Optional[int] = None):
         super().__init__(num_positions, embedding_dim)
@@ -106,7 +107,7 @@ class WhisperPositionalEmbedding(nn.Embedding):
         return self.weight[past_key_values_length : past_key_values_length + input_ids.shape[-1]]
 
 
-# Copied from transformers.models.whisper.modeling_whisper.WhisperEncoderLayer
+# Copied from transformers.models.whisper.modeling_whisper.WhisperEncoderLayer with WhisperAttention->WhisperMQAttention
 class WhisperEncoderLayer(nn.Module):
     def __init__(self, config: WhisperConfig):
         super().__init__()
@@ -293,6 +294,7 @@ class WhisperDecoderLayer(nn.Module):
         return outputs
 
 
+# Copied from transformers.models.whisper.modeling_whisper.WhisperPreTrainedModel
 class WhisperPreTrainedModel(PreTrainedModel):
     config_class = WhisperConfig
     base_model_prefix = "model"
@@ -417,7 +419,7 @@ WHISPER_INPUTS_DOCSTRING = r"""
             Whether or not to return a [`~utils.ModelOutput`] instead of a plain tuple.
 """
 
-
+# Copied from transformers.models.whisper.modeling_whisper.WhisperEncoder
 class WhisperEncoder(WhisperPreTrainedModel):
     """
     Transformer encoder consisting of *config.encoder_layers* self attention layers. Each layer is a
@@ -558,7 +560,7 @@ class WhisperEncoder(WhisperPreTrainedModel):
             last_hidden_state=hidden_states, hidden_states=encoder_states, attentions=all_attentions
         )
 
-
+# Copied from transformers.models.whisper.modeling_whisper.WhisperDecoder
 class WhisperDecoder(WhisperPreTrainedModel):
     """
     Transformer decoder consisting of *config.decoder_layers* layers. Each layer is a [`WhisperDecoderLayer`]
@@ -814,6 +816,7 @@ class WhisperDecoder(WhisperPreTrainedModel):
     "The bare Whisper Model outputting raw hidden-states without any specific head on top.",
     WHISPER_START_DOCSTRING,
 )
+# Copied from transformers.models.whisper.modeling_whisper.WhisperModel
 class WhisperModel(WhisperPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"proj_out.weight"]
 
@@ -938,6 +941,7 @@ class WhisperModel(WhisperPreTrainedModel):
     "The Whisper Model with a language modeling head. Can be used for automatic speech recognition.",
     WHISPER_START_DOCSTRING,
 )
+# Copied from transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration
 class WhisperForConditionalGeneration(WhisperPreTrainedModel):
     base_model_prefix = "model"
     _keys_to_ignore_on_load_missing = [
