@@ -176,7 +176,7 @@ class WhisperEncoderLayer(nn.Module):
         return outputs
 
 
-# Copied from transformers.models.whisper.modeling_whisper.WhisperDecoderLayer
+# Copied from transformers.models.whisper.modeling_whisper.WhisperDecoderLayer with WhisperAttention->WhisperMQAttention
 class WhisperDecoderLayer(nn.Module):
     def __init__(self, config: WhisperConfig):
         super().__init__()
