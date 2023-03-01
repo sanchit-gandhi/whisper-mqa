@@ -35,7 +35,7 @@ This means that for low batch sizes, we are memory limited ($b \approx 1$). To c
 batch size $b$, memory size permitting.
 
 For very low sequence lengths $n << d$, the $n/d$ term is small and so the offensive comes from the $1/b$. This is the 
-typical setting in speech, where the sequence length is much less than the model dim.
+typical setting in speech, where the output sequence length is much less than the model dim.
 
 ### Multi-Query Attention
 
