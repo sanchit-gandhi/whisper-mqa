@@ -1,0 +1,2 @@
+from whisper_mqa.multiquery_attention import WhisperMQAttention
+from whisper_mqa.modeling_whisper_mqa import WhisperMQAForConditionalGeneration

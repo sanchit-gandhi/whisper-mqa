@@ -1,6 +1,6 @@
 from datasets import load_dataset
-from transformers import WhisperConfig, WhisperProcessor
-from whisper_mqa import WhisperForConditionalGeneration
+from transformers import WhisperConfig, WhisperForConditionalGeneration, WhisperProcessor
+from whisper_mqa import WhisperMQAForConditionalGeneration
 
 import torch
 from torch.utils.data import DataLoader
@@ -13,11 +13,16 @@ import subprocess as sp
 import csv
 
 BATCH_SIZE = 1  # we are bandwidth limited when bsz ~=1, with MQA we should see improvements for large bsz
+NUM_BATCHES = 100
 GENERATED_TOKENS = 25  # this is the typical output seq len for speech
+USE_MQA = True
+
+# MQA model from whisper-mqa or MHA model from transformers
+whisper_cls = WhisperMQAForConditionalGeneration if USE_MQA else WhisperForConditionalGeneration
 
 # benchmark on 100 samples from the LS dataset
 librispeech = load_dataset("sanchit-gandhi/librispeech_asr_clean", split="train.100")
-librispeech = librispeech.select(range(100))
+librispeech = librispeech.select(range(BATCH_SIZE * NUM_BATCHES))
 
 # processors/tokenizers are the same for all models, so just load from tiny and preprocess once
 processor = WhisperProcessor.from_pretrained("openai/whisper-tiny.en")
@@ -28,7 +33,7 @@ def preprocess(batch):
 
 dataset_processed = librispeech.map(preprocess, remove_columns=librispeech.column_names)
 
-dataloader = DataLoader(dataset_processed.with_format("torch"), batch_size=BATCH_SIZE)
+dataloader = DataLoader(dataset_processed.with_format("torch"), batch_size=BATCH_SIZE, num_workers=4, pin_memory=True)
 
 
 def get_gpu_memory():
@@ -46,7 +51,7 @@ def get_gpu_memory():
 
 
 # dicts to store our results
-whisper_checkpoints = ["tiny.en", "base.en", "small.en"]
+whisper_checkpoints = ["large-v2"]
 decoder_layer_results = {checkpoint: [] for checkpoint in whisper_checkpoints}
 runtime_results = {checkpoint: [] for checkpoint in whisper_checkpoints}
 param_results = {checkpoint: [] for checkpoint in whisper_checkpoints}
@@ -58,14 +63,20 @@ for checkpoint in whisper_checkpoints:
     checkpoint_id = f"openai/whisper-{checkpoint}"
     config = WhisperConfig.from_pretrained(checkpoint_id)
 
-    total_decoder_layers = config.decoder_layers
-    layer_increments = np.arange(2, total_decoder_layers + 2, 2)
+    if checkpoint == "large-v2":
+        layer_increments = [2, 4, 6, 8, 16, 32]
+    elif checkpoint == "medium.en":
+        layer_increments = [2, 4, 6, 8, 16, 24]
+    else:
+        total_decoder_layers = config.decoder_layers
+        layer_increments = np.arange(2, total_decoder_layers + 2, 2)
+
     layer_increments = layer_increments[::-1]
 
     for decoder_layers in layer_increments:
         print("Layers: ", decoder_layers)
         config.decoder_layers = int(decoder_layers)
-        model = WhisperForConditionalGeneration(config)
+        model = whisper_cls(config)
         model.to("cuda")
         model.half()
 
@@ -97,7 +108,7 @@ with open("results.csv", "w", encoding="UTF8") as f:
     # write the data
     for key in decoder_layer_results:
         for i in range(len(decoder_layer_results[key])):
-            prefix = key if i == 0 else ""
-            data = [prefix, decoder_layer_results[key][i], int(param_results[key][i]), int(compression_results[key][i]), round(vram_results[key][i] / 1000, 2), round(runtime_results[key][i], 1)]
+            prefix = key.rstrip(".en").rstrip("-v2") if i == 0 else ""
+            data = [prefix, decoder_layer_results[key][i], round(param_results[key][i], 1), round(compression_results[key][i], 1), round(vram_results[key][i] / 1000, 2), round(runtime_results[key][i], 1)]
             writer.writerow(data)
         writer.writerow([])
