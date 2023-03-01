@@ -55,6 +55,7 @@ class WhisperMQAttention(nn.Module):
 
         # get query proj
         query_states = self.q_proj(hidden_states) * self.scaling  # (bsz, tgt_len, embed_dim)
+
         # get key, value proj
         # `past_key_value[0].shape[2] == key_value_states.shape[1]`
         # is checking that the `sequence_length` of the `past_key_value` is the same as
@@ -69,18 +70,18 @@ class WhisperMQAttention(nn.Module):
             value_states = past_key_value[1]
         elif is_cross_attention:
             # cross_attentions
-            key_value_states = self.kv_proj(key_value_states)
-            key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, src_len, head_dim)
+            key_value_states = self.kv_proj(key_value_states)  # (src_bsz, src_len, head_dim)
+            key_states, value_states = key_value_states.split(self.head_dim, dim=2)
         elif past_key_value is not None:
             # reuse k, v, self_attention
             key_value_states = self.kv_proj(hidden_states)
             key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, src_len, head_dim)
-            key_states = torch.cat([past_key_value[0], key_states], dim=2)
-            value_states = torch.cat([past_key_value[1], value_states], dim=2)
+            key_states = torch.cat([past_key_value[0], key_states], dim=1)
+            value_states = torch.cat([past_key_value[1], value_states], dim=1)
         else:
             # self_attention
             key_value_states = self.kv_proj(hidden_states)
-            key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, seq_len, head_dim)
+            key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, src_len, head_dim)
 
         if self.is_decoder:
             # if cross_attention save Tuple(torch.Tensor, torch.Tensor) of all cross attention key/value_states.
