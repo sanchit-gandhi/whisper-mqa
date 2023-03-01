@@ -15,6 +15,18 @@ The benchmark can be run from the Python script in [benchmark_mqa.py](benchmark_
 
 ## Results
 
+Multi-Head Attention (MHA) vs Multi-Query Attention (MQA) for the default benchmark settings:
+* Batch size = 1
+* Num batches = 100 
+* Generated tokens = 25
+
+| Checkpoint | VRAM MHA / GB | VRAM MQA / GB | Time MHA / s | Time MQA / s |
+|------------|---------------|---------------|--------------|--------------|
+| tiny       | 1.38          | 1.37          | 17.0         | 15.1         |
+| base       | 1.52          | 1.49          | 19.4         | 20.4         |
+| small      | 2.27          | 2.1           | 39.4         | 38.7         |
+| medium     | 4.21          | 3.67          | 76.0         | 75.9         |
+| large      | 7.52          | 6.29          | 107.2        | 91.2         |
 
 ## Analysis
 
