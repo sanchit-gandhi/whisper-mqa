@@ -12,7 +12,7 @@ import subprocess as sp
 
 import csv
 
-BATCH_SIZE = 1
+BATCH_SIZE = 1  # we are bandwidth limited when bsz ~=1, with MQA we should see improvements for large bsz
 GENERATED_TOKENS = 25  # this is the typical output seq len for speech
 
 # benchmark on 100 samples from the LS dataset
@@ -43,6 +43,7 @@ def get_gpu_memory():
 
     memory_use_values = [int(x.split()[0]) for i, x in enumerate(memory_use_info)]
     return memory_use_values
+
 
 # dicts to store our results
 whisper_checkpoints = ["tiny.en", "base.en", "small.en"]
