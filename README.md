@@ -44,5 +44,5 @@ operations to memory access is then:
 
 $$ \Theta \left(\frac{1}{d} + \frac{n}{dh} + \frac{1}{b}\right)$$
 
-Thus, we have reduced the sequence length : model dim term by a factor of $h$. However, since we have small sequence lengths
-and this term was already small, the offensive still comes from $1/b$, and so we expect that our ratio is still dominated by the batch size.
+We have reduced the $n / d$ (sequence length : model dim) term by a factor of $h$. However, since we have small sequence lengths,
+this term was already small. Thus, the offensive still comes from $1/b$, and so we expect that our ratio is still dominated by the batch size $b$.
