@@ -23,9 +23,10 @@ _algorithmic operations_ is $\Theta \left(bnd^{2}\right)$ (the complexity of the
 
 ### Multi-Head Attention
 
-Across $n$ calls, the total amount of memory access is $\Theta \left(bn^{2}d + nd^{2}\right)$ (see the _Fast Transformer Decoding_ [paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
+Across $n$ calls, the total amount of memory access is $\Theta \left(bn^{2}d + nd^{2}\right)$ (see Section 2.4.1 of the _Fast Transformer Decoding_ [paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
 operations to memory access is then:
-$$ \Theta \left(\frac{n}{d} + \frac{1}{b}\right)$$
+
+$$ \Theta \left(\frac{n}{d} + \frac{1}{b}\right) $$
 
 When $n \approx d$ or $b \approx 1$, the ratio is close to 1, causing memory bandwidth to be the major
 performance bottleneck. Otherwise, the algorithmic operations are the limiting factor. 
@@ -33,12 +34,12 @@ performance bottleneck. Otherwise, the algorithmic operations are the limiting f
 This means that for low batch sizes, we are memory limited ($b \approx 1$). To circumvent this, we can just use a larger 
 batch size $b$, memory size permitting.
 
-For very low sequence lengths $n << d$$, the $n/d$ term is small and so the offensive comes from the $1/b$. This is the 
+For very low sequence lengths $n << d$, the $n/d$ term is small and so the offensive comes from the $1/b$. This is the 
 typical setting in speech, where the sequence length is much less than the model dim.
 
 ### Multi-Query Attention
 
-Across $n$ calls, the total amount of memory access is $\Theta \left(bnd + bn^{2}k + nd^{2}\right)$ (see the _Fast Transformer Decoding_ [paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
+Across $n$ calls, the total amount of memory access is $\Theta \left(bnd + bn^{2}k + nd^{2}\right)$ (see Section 3.1 of the _Fast Transformer Decoding_ [paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
 operations to memory access is then:
 
 $$ \Theta \left(\frac{1}{d} + \frac{n}{dh} + \frac{1}{b}\right)$$
