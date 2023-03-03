@@ -46,14 +46,14 @@ with a 32x larger batch size:
 ## Analysis
 
 Assuming we have a query length of $n$, a batch size of $b$, and a model dimension of $d$, the total number of 
-_algorithmic operations_ is $\Theta \left(bnd^{2}\right)$ (the complexity of the quadratic attention operation).
+_algorithmic operations_ is $\mathcal{O} \left(bnd^{2}\right)$ (the complexity of the quadratic attention operation).
 
 ### Multi-Head Attention
 
-Across $n$ calls, the total amount of memory access is $\Theta \left(bn^{2}d + nd^{2}\right)$ (see Section 2.4.1 of the [MQA paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
+Across $n$ calls, the total amount of memory access is $\mathcal{O} \left(bn^{2}d + nd^{2}\right)$ (see Section 2.4.1 of the [MQA paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
 operations to memory access is then:
 
-$$ \Theta \left(\frac{n}{d} + \frac{1}{b}\right) $$
+$$ \mathcal{O} \left(\frac{n}{d} + \frac{1}{b}\right) $$
 
 When $n \approx d$ or $b \approx 1$, the ratio is close to 1, causing memory bandwidth to be the major
 performance bottleneck. Otherwise, the algorithmic operations are the limiting factor. 
@@ -66,10 +66,10 @@ typical setting in speech, where the output sequence length is much less than th
 
 ### Multi-Query Attention
 
-Across $n$ calls, the total amount of memory access is $\Theta \left(bnd + bn^{2}k + nd^{2}\right)$ (see Section 3.1 of the [MQA paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
+Across $n$ calls, the total amount of memory access is $\mathcal{O} \left(bnd + bn^{2}k + nd^{2}\right)$ (see Section 3.1 of the [MQA paper](https://arxiv.org/abs/1911.02150) for a derivation). The ratio of algorithmic 
 operations to memory access is then:
 
-$$ \Theta \left(\frac{1}{d} + \frac{n}{dh} + \frac{1}{b}\right)$$
+$$ \mathcal{O} \left(\frac{1}{d} + \frac{n}{dh} + \frac{1}{b}\right)$$
 
 We have reduced the $n / d$ (sequence length : model dim) term by a factor of $h$. However, since we have small sequence lengths,
 this term was already small. Thus, the offensive still comes from $1/b$, and so we expect that our ratio is still dominated by the batch size $b$.
