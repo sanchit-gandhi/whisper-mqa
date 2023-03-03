@@ -62,7 +62,7 @@ This means that for low batch sizes, we are memory limited ($b \approx 1$). To c
 batch size $b$, memory size permitting.
 
 For very low sequence lengths $n << d$, the $n/d$ term is small and so the offensive comes from the $1/b$. This is the 
-typical setting in speech, where the output sequence length is much less than the model dim.
+typical setting in speech recognition, where the output sequence length is much less than the model dimensionality.
 
 ### Multi-Query Attention
 
@@ -71,5 +71,5 @@ operations to memory access is then:
 
 $$ \mathcal{O} \left(\frac{1}{d} + \frac{n}{dh} + \frac{1}{b}\right)$$
 
-We have reduced the $n / d$ (sequence length : model dim) term by a factor of $h$. However, since we have small sequence lengths,
-this term was already small. Thus, the offensive still comes from $1/b$, and so we expect that our ratio is still dominated by the batch size $b$.
+We have reduced the $n / d$ (sequence length : model dimensionality) term by a factor of $h$. However, since we have small sequence lengths,
+this term is already small. Thus, the offensive still comes from $1/b$, and so we expect that our ratio is still dominated by the batch size $b$.
