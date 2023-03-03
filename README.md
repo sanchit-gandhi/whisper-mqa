@@ -28,6 +28,21 @@ Multi-Head Attention (MHA) vs Multi-Query Attention (MQA) for the default benchm
 | medium     | 4.21          | 3.67          | 76.0         | 75.9         |
 | large      | 7.52          | 6.29          | 107.2        | 91.2         |
 
+We see very little difference between MHA and MQA, likely because we are memory access limited for low batch sizes 
+(see [Analysis](#analysis)). We should see improvements using MQA with larger batch sizes. Re-running the benchmark 
+with a 32x larger batch size:
+* Batch size = 32
+* Num batches = 100 
+* Generated tokens = 25
+
+| Checkpoint | VRAM MHA / GB | VRAM MQA / GB | Time MHA / s | Time MQA / s |
+|------------|---------------|---------------|--------------|--------------|
+| tiny       | 3.22          | 3.21          | 47.2         | 49.6         |
+| base       | 3.98          | 3.94          | 51.4         | 55.6         |
+| small      | 5.98          | 5.76          | 77.9         | 83.3         |
+| medium     | 9.19          | 8.55          | 181.0        | 173.4        |
+| large      | 15.28         | 12.40         | 303.1        | 277.5        |
+
 ## Analysis
 
 Assuming we have a query length of $n$, a batch size of $b$, and a model dimension of $d$, the total number of 
