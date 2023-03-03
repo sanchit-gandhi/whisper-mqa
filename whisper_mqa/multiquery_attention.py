@@ -28,7 +28,8 @@ class WhisperMQAttention(nn.Module):
         self.is_decoder = is_decoder
 
         # Keys and values are shared across heads
-        self.kv_proj = nn.Linear(embed_dim, 2 * self.head_dim, bias=bias)
+        self.k_proj = nn.Linear(embed_dim, self.head_dim, bias=False)
+        self.v_proj = nn.Linear(embed_dim, self.head_dim, bias=bias)
         self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
         self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
 
@@ -70,18 +71,18 @@ class WhisperMQAttention(nn.Module):
             value_states = past_key_value[1]
         elif is_cross_attention:
             # cross_attentions
-            key_value_states = self.kv_proj(key_value_states)  # (src_bsz, src_len, head_dim)
-            key_states, value_states = key_value_states.split(self.head_dim, dim=2)
+            key_states = self.k_proj(key_value_states)  # (src_bsz, src_len, head_dim)
+            value_states = self.v_proj(key_value_states)  # (src_bsz, src_len, head_dim)
         elif past_key_value is not None:
             # reuse k, v, self_attention
-            key_value_states = self.kv_proj(hidden_states)
-            key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, src_len, head_dim)
+            key_states = self.k_proj(hidden_states)  # (bsz, src_len, head_dim)
+            value_states = self.v_proj(hidden_states)  # (bsz, src_len, head_dim)
             key_states = torch.cat([past_key_value[0], key_states], dim=1)
             value_states = torch.cat([past_key_value[1], value_states], dim=1)
         else:
             # self_attention
-            key_value_states = self.kv_proj(hidden_states)
-            key_states, value_states = key_value_states.split(self.head_dim, dim=2)  # (bsz, src_len, head_dim)
+            key_states = self.k_proj(hidden_states)  # (bsz, src_len, head_dim)
+            value_states = self.v_proj(hidden_states)  # (bsz, src_len, head_dim)
 
         if self.is_decoder:
             # if cross_attention save Tuple(torch.Tensor, torch.Tensor) of all cross attention key/value_states.
